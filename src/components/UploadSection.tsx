@@ -1,9 +1,10 @@
+// src/components/UploadSection.tsx
 import React, { useState, useCallback } from 'react';
 import { Upload, Link, Loader, CheckCircle, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import axios from '../utils/axios'; // Use your configured axios instance
 
 interface UploadSectionProps {
-  onUploadSuccess: () => void;
+  onUploadSuccess: (profile: any) => void; // ✅ Accept profile parameter
 }
 
 const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
@@ -47,10 +48,15 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
       const formData = new FormData();
       formData.append('resume', file);
 
-      const response = await axios.post('/analysis/upload-resume', formData); // ✅ No token here; handled by interceptor
+      const response = await axios.post('/analysis/upload-resume', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       setUploadStatus('success');
-      setTimeout(() => onUploadSuccess(), 1000);
+      // ✅ Pass the profile data from response
+      setTimeout(() => onUploadSuccess(response.data.profile), 1000);
     } catch (error) {
       console.error('Upload failed:', error);
       setUploadStatus('error');
@@ -69,9 +75,10 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
     setUploadStatus('processing');
 
     try {
-      const response = await axios.post('/analysis/linkedin', { url: linkedinUrl }); // ✅ Interceptor adds token
+      const response = await axios.post('/analysis/linkedin', { url: linkedinUrl });
       setUploadStatus('success');
-      setTimeout(() => onUploadSuccess(), 1000);
+      // ✅ Pass the profile data from response
+      setTimeout(() => onUploadSuccess(response.data.profile), 1000);
     } catch (error) {
       console.error('LinkedIn upload failed:', error);
       setUploadStatus('error');
@@ -103,7 +110,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`p-8 border-2 border-dashed rounded-lg ${dragActive ? 'border-primary-600 bg-primary-50' : 'border-neutral-300'}`}
+          className={`p-8 border-2 border-dashed rounded-lg transition-colors ${
+            dragActive ? 'border-primary-600 bg-primary-50' : 'border-neutral-300'
+          }`}
         >
           <Upload className="mx-auto mb-4 w-10 h-10 text-primary-600" />
           <p className="text-sm text-neutral-600 mb-2">Drag and drop your resume PDF or DOC here</p>
@@ -117,7 +126,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
               if (file) handleFileUpload(file);
             }}
           />
-          <label htmlFor="fileUpload" className="cursor-pointer text-primary-600 hover:underline">Or click to browse</label>
+          <label htmlFor="fileUpload" className="cursor-pointer text-primary-600 hover:underline">
+            Or click to browse
+          </label>
         </div>
       ) : (
         <div className="space-y-4">
@@ -135,16 +146,32 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUploadSuccess }) => {
           </div>
           <button
             onClick={handleLinkedInAnalysis}
-            className="w-full py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg hover:from-primary-700 hover:to-secondary-700"
+            disabled={isProcessing}
+            className="w-full py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-lg hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            Analyze Profile
+            {isProcessing ? 'Analyzing...' : 'Analyze Profile'}
           </button>
         </div>
       )}
 
-      {uploadStatus === 'processing' && <Loader className="mx-auto mt-4 animate-spin text-primary-500" />}
-      {uploadStatus === 'success' && <CheckCircle className="mx-auto mt-4 text-green-500" />}
-      {uploadStatus === 'error' && <AlertCircle className="mx-auto mt-4 text-red-500" />}
+      {uploadStatus === 'processing' && (
+        <div className="mt-4 flex items-center justify-center space-x-2">
+          <Loader className="animate-spin text-primary-500" />
+          <span className="text-sm text-gray-600">Processing your {uploadType}...</span>
+        </div>
+      )}
+      {uploadStatus === 'success' && (
+        <div className="mt-4 flex items-center justify-center space-x-2">
+          <CheckCircle className="text-green-500" />
+          <span className="text-sm text-green-600">Analysis complete!</span>
+        </div>
+      )}
+      {uploadStatus === 'error' && (
+        <div className="mt-4 flex items-center justify-center space-x-2">
+          <AlertCircle className="text-red-500" />
+          <span className="text-sm text-red-600">Upload failed. Please try again.</span>
+        </div>
+      )}
     </div>
   );
 };

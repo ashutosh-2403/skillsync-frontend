@@ -1,8 +1,31 @@
 import React from 'react';
 import { Brain, Github, Linkedin, Twitter, Mail } from 'lucide-react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onViewChange: (view: string) => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onViewChange }) => {
   const currentYear = new Date().getFullYear();
+
+  // Navigation mapping for footer links
+  const handleNavigation = (item: string) => {
+    const navigationMap: { [key: string]: string } = {
+      'Features': 'features',
+      'Dashboard': 'dashboard',
+      'AI Assistant': 'assistant',
+      'Skill Analysis': 'dashboard', // Maps to dashboard for now
+      'Career Roadmaps': 'dashboard', // Maps to dashboard for now
+      'About Us': 'about',
+      'Contact': 'contact',
+      'Privacy Policy': 'contact', // Maps to contact for now
+      'Terms of Service': 'contact', // Maps to contact for now
+      'Careers': 'contact' // Maps to contact for now
+    };
+    
+    const viewName = navigationMap[item] || 'home';
+    onViewChange(viewName);
+  };
 
   return (
     <footer className="bg-neutral-900 text-white">
@@ -55,7 +78,7 @@ const Footer: React.FC = () => {
 
               {/* Email */}
               <a
-                href="mailto:skillsync2403@gmail.com"
+                href="mailto:ashutoshmishra2403@gmail.com"
                 className="text-neutral-400 hover:text-primary-400 transition-colors"
               >
                 <Mail className="w-5 h-5" />
@@ -69,9 +92,12 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               {['Features', 'Dashboard', 'AI Assistant', 'Skill Analysis', 'Career Roadmaps'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="text-neutral-400 hover:text-white transition-colors">
+                  <button
+                    onClick={() => handleNavigation(item)}
+                    className="text-neutral-400 hover:text-white transition-colors text-left"
+                  >
                     {item}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -83,9 +109,12 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               {['Documentation', 'API Reference', 'Learning Center', 'Case Studies', 'Blog'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="text-neutral-400 hover:text-white transition-colors">
+                  <button
+                    onClick={() => handleNavigation(item)}
+                    className="text-neutral-400 hover:text-white transition-colors text-left"
+                  >
                     {item}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -97,9 +126,12 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service', 'Contact'].map((item) => (
                 <li key={item}>
-                  <a href="#" className="text-neutral-400 hover:text-white transition-colors">
+                  <button
+                    onClick={() => handleNavigation(item)}
+                    className="text-neutral-400 hover:text-white transition-colors text-left"
+                  >
                     {item}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -111,7 +143,7 @@ const Footer: React.FC = () => {
             © {currentYear} SkillSync. All rights reserved.
           </p>
           <p className="text-neutral-400 text-sm mt-2 md:mt-0">
-            Built with ❤️ for career growth
+            Built with ❤️ by <span className="text-primary-400 font-medium">Ashutosh Mishra</span>
           </p>
         </div>
       </div>

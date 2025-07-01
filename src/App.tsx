@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
@@ -11,25 +11,35 @@ import ProfilePage from './components/profile/ProfilePage';
 import AuthModal from './components/auth/AuthModal';
 import Footer from './components/Footer';
 
-type ViewType = 'home' | 'dashboard' | 'upload' | 'assistant' | 'profile';
+// Import new page components
+import Features from './pages/Features';
+import AboutUs from './pages/AboutUs';
+import Contact from './pages/Contact';
+
+// Updated ViewType to include new pages
+type ViewType = 'home' | 'dashboard' | 'upload' | 'assistant' | 'profile' | 'features' | 'about' | 'contact';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
-  const [userProfile, setUserProfile] = useState(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const { user, loading } = useAuth();
 
-  const handleViewChange = (view: ViewType) => {
+  // Fix: Properly type the view parameter
+  const handleViewChange = (view: ViewType | string) => {
+    const validView = view as ViewType;
+    
     // Require authentication for certain views
-    if (['dashboard', 'profile', 'assistant'].includes(view) && !user) {
+    if (['dashboard', 'profile', 'assistant'].includes(validView) && !user) {
       setAuthModalMode('login');
       setShowAuthModal(true);
       return;
     }
-    setCurrentView(view);
+    setCurrentView(validView);
   };
 
+  // Fix: Type the profile parameter properly
   const handleProfileUpload = (profile: any) => {
     setUserProfile(profile);
     setCurrentView('dashboard');
@@ -64,7 +74,7 @@ function AppContent() {
         currentView={currentView} 
         onViewChange={handleViewChange}
         user={user}
-        onAuthClick={(mode) => {
+        onAuthClick={(mode: 'login' | 'register') => {
           setAuthModalMode(mode);
           setShowAuthModal(true);
         }}
@@ -89,6 +99,11 @@ function AppContent() {
           )}
           {currentView === 'assistant' && <AIAssistant />}
           {currentView === 'profile' && <ProfilePage />}
+          
+          {/* New page views */}
+          {currentView === 'features' && <Features />}
+          {currentView === 'about' && <AboutUs />}
+          {currentView === 'contact' && <Contact />}
         </motion.main>
       </AnimatePresence>
       
@@ -98,7 +113,7 @@ function AppContent() {
         initialMode={authModalMode}
       />
       
-      <Footer />
+      <Footer onViewChange={handleViewChange} />
     </div>
   );
 }
